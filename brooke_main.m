@@ -50,7 +50,6 @@ plot(t_list, solution_X_list)
 xlabel('Time');
 ylabel('Solution');
 title('Forward Euler Integration Results');
-legend("Euler's Method", 'Closed-Form Solution')
 grid on;
 
 %% Defined functions
