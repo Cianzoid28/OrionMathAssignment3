@@ -5,7 +5,7 @@ close all;
 
 %% forward_euler_step
 t = 0;
-h = 0.01;
+h = 0.3;
 
 % rate_func01
 X0 = 1;
@@ -18,7 +18,7 @@ forward_euler_step(@rate_func02, t, X0, h)
 solution02(t+h)
 
 %% forward_euler_fixed_step_integration
-t_span = [0, 100];
+t_span = [0, 6];
 
 % rate_func01
 X0 = solution01(0);
@@ -136,12 +136,14 @@ grid on;
 X0 = solution01(0);
 t_span = [0, t_ref];
 x_actual = solution01(t_ref);
+h_avg_list = zeros(1, length(h_list));
 
 % Euler's method
 euler_x_list = zeros(1, length(h_list));
 for i = 1:num_points
     [t_list, X_list, h_avg, num_evals] = forward_euler_fixed_step_integration(@rate_func01, t_span, X0, h_list(i));
     euler_x_list(i) = X_list(:, end);
+    h_avg_list(i) = h_avg;
 end
 
 % Midpoint method
@@ -156,9 +158,9 @@ euler_truncation_error = abs(x_actual - euler_x_list);
 midpoint_truncation_error = abs(x_actual - midpoint_x_list);
 
 figure();
-loglog(h_list, euler_truncation_error)
+loglog(h_avg_list, euler_truncation_error)
 hold on;
-loglog(h_list, midpoint_truncation_error)
+loglog(h_avg_list, midpoint_truncation_error)
 xlabel('Step Size (h)');
 ylabel('Global Truncation Error');
 title('Global Truncation Error vs Step Size');
