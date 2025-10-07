@@ -17,14 +17,14 @@ function [t_list,X_list,h_avg, num_evals] = fixed_step_integration(rate_func_in,
     N = ceil((tspan(2) - tspan(1)) / h_ref);
     h_avg = (tspan(2) - tspan(1)) / N;
 
-    t_list = linspace(tspan(1), tspan(2), N);
-    X_list = zeros(length(X0), N);
+    t_list = linspace(tspan(1), tspan(2), N+1);
+    X_list = zeros(length(X0), N+1);
     X_list(:, 1) = X0;
     X_N = X0;
     
     num_evals = 0;
 
-    for i = 1:N-1
+    for i = 1:N
         [X_N, delta_num_evals] = backward_euler_step(rate_func_in, t_list(i), X_N, h_avg);
         num_evals = num_evals + delta_num_evals;
         X_list(:, i+1) = X_N;
