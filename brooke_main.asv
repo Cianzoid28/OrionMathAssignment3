@@ -1,8 +1,3 @@
-clear;
-clc;
-clf;
-close all;
-
 %% forward_euler_step
 t = 0;
 h = 0.01;
@@ -35,7 +30,7 @@ plot(t_list, X_list);
 plot(t_list, solution_X_list)
 xlabel('Time');
 ylabel('Solution');
-title('Test01 Forward Euler Integration Results');
+title('Forward Euler Integration Results');
 legend("Euler's Method", 'Closed-Form Solution')
 grid on;
 
@@ -54,33 +49,15 @@ plot(t_list, X_list);
 plot(t_list, solution_X_list)
 xlabel('Time');
 ylabel('Solution');
-title('Test02 Forward Euler Integration Results');
+title('Forward Euler Integration Results');
 grid on;
 
 %Midpoint
 
-% rate_func01
-X0 = 1;
-[t_list, X_list, h_avg, num_evals] = explicit_midpoint_fixed_step_integration(@rate_func01, t_span, X0, h);
-solution_X_list = zeros(length(X0), length(t_list));
-for i = 1:length(t_list)
-    solution_X_list(i) = solution01(t_list(i));
-end
-
-figure();
-hold on;
-
-plot(t_list, X_list);
-plot(t_list, solution_X_list)
-xlabel('Time');
-ylabel('Solution');
-title('Test01 Explicit Midpoint Euler Integration Results');
-legend("Euler's Method", 'Closed-Form Solution')
-grid on; 
 
 % rate_func02
 X0 = [1; 0];
-[t_list, X_list, h_avg, num_evals] = explicit_midpoint_fixed_step_integration(@rate_func02, t_span, X0, h);
+[t_list, X_list, h_avg, num_evals] = forward_euler_fixed_step_integration(@rate_func02, t_span, X0, h);
 solution_X_list = zeros(length(X0), length(t_list));
 for i = 1:length(t_list)
     solution_X_list(:, i) = solution02(t_list(i));
@@ -93,7 +70,7 @@ plot(t_list, X_list);
 plot(t_list, solution_X_list)
 xlabel('Time');
 ylabel('Solution');
-title('Test02 Explicit Midpoint Euler Integration Results');
+title('Forward Euler Integration Results');
 grid on;
 
 %% Defined functions
