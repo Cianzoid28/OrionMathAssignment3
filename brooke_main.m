@@ -91,9 +91,32 @@ hold on;
 
 plot(t_list, X_list);
 plot(t_list, solution_X_list)
+hold off;
 xlabel('Time');
 ylabel('Solution');
 title('Test02 Explicit Midpoint Euler Integration Results');
+grid on;
+
+%% Local Truncation Error
+num_points = 100;
+t_ref = 0.492;
+h_list = logspace(-5, 1, num_points);
+
+X0 = 1;
+t_span = [0, t_ref];
+x_approx_list = zeros(1, length(h_list));
+for i = 1:num_points
+    [t_list, X_list, h_avg, num_evals] = forward_euler_fixed_step_integration(@rate_func01, t_span, X0, h_list(i));
+    x_approx_list(i) = X_list(:, end);
+end
+x_actual = solution01(t_ref);
+% Calculate local truncation error
+local_truncation_error = abs(x_actual - x_approx_list);
+figure();
+loglog(h_list, local_truncation_error)
+xlabel('Step Size (h)');
+ylabel('Local Truncation Error');
+title('Local Truncation Error vs Step Size');
 grid on;
 
 %% Defined functions
