@@ -12,6 +12,55 @@ solution01(t+h)
 backward_euler_step(@rate_func01, t, X0, h)
 
 
+clear;
+clc;
+clf;
+close all;
+
+%% forward_euler_step
+t = 0;
+h = 0.3;
+
+% rate_func01
+X0 = 1;
+forward_euler_step(@rate_func01, t, X0, h)
+solution01(t+h)
+
+% rate_func02
+X0 = [1; 0];
+forward_euler_step(@rate_func02, t, X0, h)
+solution02(t+h)
+
+%% forward_euler_fixed_step_integration
+t_span = [0, 6];
+h_list = [0.5, 0.4, 0.25];
+colors = ['b', 'k', 'm', 'r.'];
+% rate_func01
+X0 = solution01(0);
+figure();
+for j = 1:length(h_list)
+
+    [t_list, X_list, h_avg, num_evals] = forward_euler_fixed_step_integration(@rate_func01, t_span, X0, h_list(j));
+    
+    
+    plot(t_list, X_list, colors(j));
+    hold on;
+    
+    
+end
+ylim([-2,2])
+xlabel('Time');
+ylabel('Solution');
+solution_X_list = zeros(length(X0), length(t_list));
+for i = 1:length(t_list)
+    solution_X_list(i) = solution01(t_list(i));
+end
+plot(t_list, solution_X_list, colors(4))
+title('Forward Euler H Step Comparison');
+legend("Euler's Method H = 0.5", "Euler's Method H = 0.4", "Euler's Method H = 0.25",'Closed-Form Solution')
+grid on;
+
+
 
 %% forward_euler_fixed_step_integration
 t_span = [0, 10];
