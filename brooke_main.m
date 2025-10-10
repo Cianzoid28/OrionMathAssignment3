@@ -262,6 +262,77 @@ ylabel('Solution');
 title('Test02 Implicit Midpoint Integration Results');
 grid on;
 
+%% Local Truncation Error
+num_points = 100;
+t_ref = 0.492;
+h_list = logspace(-5, 1, num_points);
+X0 = solution01(t_ref);
+x_actual_list = zeros(1, length(h_list));
+
+% Backward Euler's method
+backward_euler_x_list = zeros(1, length(h_list));
+for i = 1:num_points
+    [X1, num_evals] = backward_euler_step(@rate_func01, t_ref, X0, h_list(i));
+    backward_euler_x_list(i) = X1;
+    x_actual_list(i) = solution01(t_ref + h_list(i));
+end
+
+% Implicit Midpoint method
+implicit_midpoint_x_list = zeros(1, length(h_list));
+for i = 1:num_points
+    [X1, num_evals] = implicit_midpoint_step(@rate_func01, t_ref, X0, h_list(i));
+    implicit_midpoint_x_list(i) = X1;
+end
+
+% Calculate global truncation error
+euler_truncation_error = abs(x_actual_list - backward_euler_x_list);
+midpoint_truncation_error = abs(x_actual_list - implicit_midpoint_x_list);
+
+figure();
+loglog(h_list, euler_truncation_error)
+hold on;
+loglog(h_list, midpoint_truncation_error)
+xlabel('Step Size (h)');
+ylabel('Local Truncation Error');
+title('Local Truncation Error vs Step Size');
+legend('Backward Euler Error', 'Implicit Midpoint Error');
+grid on;
+
+%% Global Truncation Error
+X0 = solution01(0);
+t_span = [0, t_ref];
+x_actual = solution01(t_ref);
+h_avg_list = zeros(1, length(h_list));
+
+% Euler's method
+euler_x_list = zeros(1, length(h_list));
+for i = 1:num_points
+    [t_list, X_list, h_avg, num_evals] = fixed_step_integration(@rate_func01, @backward_euler_step, t_span, X0, h_list(i));
+    euler_x_list(i) = X_list(:, end);
+    h_avg_list(i) = h_avg;
+end
+
+% Midpoint method
+midpoint_x_list = zeros(1, length(h_list));
+for i = 1:num_points
+    [t_list, X_list, h_avg, num_evals] = fixed_step_integration(@rate_func01, @implicit_midpoint_step, t_span, X0, h_list(i));
+    midpoint_x_list(i) = X_list(:, end);
+end
+
+% Calculate global truncation error
+euler_truncation_error = abs(x_actual - euler_x_list);
+midpoint_truncation_error = abs(x_actual - midpoint_x_list);
+
+figure();
+loglog(h_avg_list, euler_truncation_error)
+hold on;
+loglog(h_avg_list, midpoint_truncation_error)
+xlabel('Step Size (h)');
+ylabel('Global Truncation Error');
+title('Global Truncation Error vs Step Size');
+legend('Backward Euler Error', 'Implicit Midpoint Error');
+grid on;
+
 %% Defined functions
 function dXdt = rate_func01(t,X)
     dXdt = -5*X + 5*cos(t) - sin(t);
