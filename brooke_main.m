@@ -8,14 +8,16 @@ t = 0;
 h = 0.3;
 
 % rate_func01
-X0 = 1;
-forward_euler_step(@rate_func01, t, X0, h)
-solution01(t+h)
+X0 = solution01(t);
+labels = ["Forward Euler Step rate_func01:", "Expected Step rate_func01:"];
+results = [forward_euler_step(@rate_func01, t, X0, h), solution01(t+h)];
+disp([labels; results]);
 
 % rate_func02
-X0 = [1; 0];
-forward_euler_step(@rate_func02, t, X0, h)
-solution02(t+h)
+X0 = solution02(t);
+labels = ["Forward Euler Step rate_func02:", "Expected Step rate_func02:"];
+results = [forward_euler_step(@rate_func02, t, X0, h), solution02(t+h)];
+disp([labels; results]);
 
 %% forward_euler_fixed_step_integration
 t_span = [0, 6];
@@ -57,7 +59,7 @@ ylabel('Solution');
 title('Test02 Forward Euler Integration Results');
 grid on;
 
-%Midpoint
+%% explicit_midpoint_fixed_step_integration
 
 % rate_func01
 X0 = solution01(0);
@@ -165,6 +167,99 @@ xlabel('Step Size (h)');
 ylabel('Global Truncation Error');
 title('Global Truncation Error vs Step Size');
 legend('Euler Error', 'Midpoint Error');
+grid on;
+
+%% backward_euler_step
+t = 0;
+h = 0.3;
+
+% rate_func01
+X0 = solution01(t);
+labels = ["Backwards Euler Step rate_func01:", "Expected Step rate_func01:"];
+results = [backward_euler_step(@rate_func01, t, X0, h), solution01(t+h)];
+disp([labels; results]);
+
+% rate_func02
+X0 = solution02(t);
+labels = ["Backwards Euler Step rate_func02:", "Expected Step rate_func02:"];
+results = [backward_euler_step(@rate_func02, t, X0, h), solution02(t+h)];
+disp([labels; results]);
+
+%% fixed_step_integration
+t_span = [0, 6];
+
+% backward_euler_step rate_func01
+X0 = solution01(0);
+[t_list, X_list, h_avg, num_evals] = fixed_step_integration(@rate_func01, @backward_euler_step, t_span, X0, h);
+solution_X_list = zeros(length(X0), length(t_list));
+for i = 1:length(t_list)
+    solution_X_list(i) = solution01(t_list(i));
+end
+
+figure();
+hold on;
+
+plot(t_list, X_list);
+plot(t_list, solution_X_list)
+xlabel('Time');
+ylabel('Solution');
+title('Test01 Backward Euler Integration Results');
+legend("Backward Euler's Method", 'Closed-Form Solution')
+grid on;
+
+% backward_euler_step rate_func02
+X0 = solution02(0);
+[t_list, X_list, h_avg, num_evals] = fixed_step_integration(@rate_func02, @backward_euler_step, t_span, X0, h);
+solution_X_list = zeros(length(X0), length(t_list));
+for i = 1:length(t_list)
+    solution_X_list(:, i) = solution02(t_list(i));
+end
+
+figure();
+hold on;
+
+plot(t_list, X_list);
+plot(t_list, solution_X_list)
+xlabel('Time');
+ylabel('Solution');
+title('Test02 Backward Euler Integration Results');
+grid on;
+
+% implicit_midpoint_step rate_func01
+X0 = solution01(0);
+[t_list, X_list, h_avg, num_evals] = fixed_step_integration(@rate_func01, @implicit_midpoint_step, t_span, X0, h);
+solution_X_list = zeros(length(X0), length(t_list));
+for i = 1:length(t_list)
+    solution_X_list(i) = solution01(t_list(i));
+end
+
+figure();
+hold on;
+
+plot(t_list, X_list);
+plot(t_list, solution_X_list)
+xlabel('Time');
+ylabel('Solution');
+title('Test01 Implicit Midpoint Integration Results');
+legend("Implicit Midpoint Method", 'Closed-Form Solution')
+grid on;
+
+% implicit_midpoint_step rate_func02
+X0 = solution02(0);
+[t_list, X_list, h_avg, num_evals] = fixed_step_integration(@rate_func02, @implicit_midpoint_step, t_span, X0, h);
+solution_X_list = zeros(length(X0), length(t_list));
+for i = 1:length(t_list)
+    solution_X_list(:, i) = solution02(t_list(i));
+end
+
+figure();
+hold on;
+
+plot(t_list, X_list);
+plot(t_list, solution_X_list)
+xlabel('Time');
+ylabel('Solution');
+title('Test02 Implicit Midpoint Integration Results');
 grid on;
 
 %% Defined functions
