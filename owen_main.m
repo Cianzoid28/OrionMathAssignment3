@@ -113,107 +113,26 @@ plot(t_list, solution_X_list, colors(4))
 title('Implicit Midpoint H Step Comparison');
 legend("Implicit Midpoint H = 0.5", "Implicit Midpoint H = 0.4", "Implicit Midpoint H = 0.25",'Closed-Form Solution')
 grid on;
-%% forward_euler_fixed_step_stability
+
+%% stability .38
 t_span = [0, 20];
 h_list = [0.38];
-colors = ['b','r.'];
+colors = ['b','g','r','m','k'];
 % rate_func01
 X0 = solution01(0);
 figure();
 for j = 1:length(h_list)
 
     [t_list, X_list, h_avg, num_evals] = forward_euler_fixed_step_integration(@rate_func01, t_span, X0, h_list(j));
-    
-    
     plot(t_list, X_list, colors(j));
     hold on;
-    
-    
-end
-ylim([-2,2])
-xlabel('Time');
-ylabel('Solution');
-solution_X_list = zeros(length(X0), length(t_list));
-for i = 1:length(t_list)
-    solution_X_list(i) = solution01(t_list(i));
-end
-plot(t_list, solution_X_list, colors(2))
-title('Forward Euler H Step Comparison');
-legend("Euler's Method H = 0.38",'Closed-Form Solution')
-grid on;
-
-%% backward_euler_fixed_step_stability
-t_span = [0, 20];
-h_list = [0.38];
-colors = ['b','r.'];
-% rate_func01
-X0 = solution01(0);
-figure();
-for j = 1:length(h_list)
-
     [t_list, X_list, h_avg, num_evals] = backward_euler_fixed_step_integration(@rate_func01, t_span, X0, h_list(j));
-    
-    
-    plot(t_list, X_list, colors(j));
-    hold on;
-    
-    
-end
-ylim([-2,2])
-xlabel('Time');
-ylabel('Solution');
-solution_X_list = zeros(length(X0), length(t_list));
-for i = 1:length(t_list)
-    solution_X_list(i) = solution01(t_list(i));
-end
-plot(t_list, solution_X_list, colors(2))
-title('Backward Euler H Step Comparison');
-legend("Euler's Method H = 0.38",'Closed-Form Solution')
-grid on;
-
-%% explicit_midpoint_fixed_step_stability
-t_span = [0, 20];
-h_list = [0.38];
-colors = ['b', 'r.'];
-% rate_func01
-X0 = solution01(0);
-figure();
-for j = 1:length(h_list)
-
-    [t_list, X_list, h_avg, num_evals] = explicit_midpoint_fixed_step_integration(@rate_func01, t_span, X0, h_list(j));
-    
-    
-    plot(t_list, X_list, colors(j));
-    hold on;
-    
-    
-end
-ylim([-2,2])
-xlabel('Time');
-ylabel('Solution');
-solution_X_list = zeros(length(X0), length(t_list));
-for i = 1:length(t_list)
-    solution_X_list(i) = solution01(t_list(i));
-end
-plot(t_list, solution_X_list, colors(2))
-title('Explicit Midpoint H Step Comparison');
-legend("Explicit Midpoint H = 0.38",'Closed-Form Solution')
-grid on;
-
-%% Implicit_midpoint_fixed_step_stability
-t_span = [0, 20];
-h_list = [0.38];
-colors = ['b','r.'];
-% rate_func01
-X0 = solution01(0);
-figure();
-for j = 1:length(h_list)
-
+    plot(t_list, X_list, colors(j+1));
     [t_list, X_list, h_avg, num_evals] = implicit_midpoint_fixed_step_integration(@rate_func01, t_span, X0, h_list(j));
+    plot(t_list, X_list, colors(j+2));
+    [t_list, X_list, h_avg, num_evals] = explicit_midpoint_fixed_step_integration(@rate_func01, t_span, X0, h_list(j));
+    plot(t_list, X_list, colors(j+3));
     
-    
-    plot(t_list, X_list, colors(j));
-    hold on;
     
     
 end
@@ -224,9 +143,43 @@ solution_X_list = zeros(length(X0), length(t_list));
 for i = 1:length(t_list)
     solution_X_list(i) = solution01(t_list(i));
 end
-plot(t_list, solution_X_list, colors(2))
+plot(t_list, solution_X_list, colors(5))
 title('Implicit Midpoint H Step Comparison');
-legend("Implicit Midpoint H = 0.38",'Closed-Form Solution')
+legend("Forward Euler's Method H = 0.38","Backwards Euler's Method H = 0.38","Implicit Midpoint H = 0.38","Explicit Midpoint H = 0.38",'Closed-Form Solution')
+grid on;
+
+%% stability .5
+t_span = [0, 20];
+h_list = [0.5];
+colors = ['b','g','r','m','k'];
+% rate_func01
+X0 = solution01(0);
+figure();
+for j = 1:length(h_list)
+
+    [t_list, X_list, h_avg, num_evals] = forward_euler_fixed_step_integration(@rate_func01, t_span, X0, h_list(j));
+    plot(t_list, X_list, colors(j));
+    hold on;
+    [t_list, X_list, h_avg, num_evals] = backward_euler_fixed_step_integration(@rate_func01, t_span, X0, h_list(j));
+    plot(t_list, X_list, colors(j+1));
+    [t_list, X_list, h_avg, num_evals] = implicit_midpoint_fixed_step_integration(@rate_func01, t_span, X0, h_list(j));
+    plot(t_list, X_list, colors(j+2));
+    [t_list, X_list, h_avg, num_evals] = explicit_midpoint_fixed_step_integration(@rate_func01, t_span, X0, h_list(j));
+    plot(t_list, X_list, colors(j+3));
+    
+    
+    
+end
+ylim([-2,2])
+xlabel('Time');
+ylabel('Solution');
+solution_X_list = zeros(length(X0), length(t_list));
+for i = 1:length(t_list)
+    solution_X_list(i) = solution01(t_list(i));
+end
+plot(t_list, solution_X_list, colors(5))
+title('Implicit Midpoint H Step Comparison');
+legend("Forward Euler's Method H = 0.5","Backwards Euler's Method H = 0.5","Implicit Midpoint H = 0.5","Explicit Midpoint H = 0.5",'Closed-Form Solution')
 grid on;
 
 %% %% Defined functions
