@@ -150,7 +150,7 @@ grid on;
 
 %% stability .5
 t_span = [0, 20];
-h_list = [0.5];
+h_list = [0.45];
 colors = ['b','g','r','m','k'];
 % rate_func01
 X0 = solution01(0);
@@ -179,7 +179,7 @@ for i = 1:length(t_list)
 end
 plot(t_list, solution_X_list, colors(5))
 title('Implicit Midpoint H Step Comparison');
-legend("Forward Euler's Method H = 0.5","Backwards Euler's Method H = 0.5","Implicit Midpoint H = 0.5","Explicit Midpoint H = 0.5",'Closed-Form Solution')
+legend("Forward Euler's Method H = 0.45","Backwards Euler's Method H = 0.45","Implicit Midpoint H = 0.45","Explicit Midpoint H = 0.45",'Closed-Form Solution')
 grid on;
 
 %% %% Defined functions
