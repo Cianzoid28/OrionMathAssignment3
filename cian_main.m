@@ -81,6 +81,39 @@ plot(t_list, solution_X_list)
 xlabel('Time');
 ylabel('Solution');
 
+
+%% p
+num_points = 100;
+t_ref = 0.492;
+h_list = logspace(-5, -1, num_points);
+
+euler_truncation_error = local_truncation_error(@forward_euler_step, num_points, t_ref, h_list);
+midpoint_truncation_error = local_truncation_error(@explicit_midpoint_step, num_points, t_ref, h_list);
+backward_euler_truncation_error = local_truncation_error(@backward_euler_step, num_points, t_ref, h_list);
+implicit_midpoint_truncation_error = local_truncation_error(@implicit_midpoint_step, num_points, t_ref, h_list);
+
+% Compute logs
+log_h_list = log(h_list);
+log_euler_error_list = log(euler_truncation_error);
+log_midpoint_error_list = log(midpoint_truncation_error);
+log_backward_error_list = log(backward_euler_truncation_error);
+log_implicit_midpoint_error_list = log(implicit_midpoint_truncation_error);
+
+
+% Linear fit
+coeffsFE = polyfit(log_h_list, log_euler_error_list, 1);
+coeffsFME = polyfit(log_h_list, log_midpoint_error_list, 1);
+coeffsBE = polyfit(log_h_list, log_backward_error_list, 1);
+coeffsBME = polyfit(log_h_list, log_implicit_midpoint_error_list, 1);
+
+% Extract slope (p)
+pFE = coeffsFE(1);
+pMFE = coeffsFME(1);
+pBE = coeffsBE(1);
+pBME = coeffsBME(1);
+
+
+
 %% Defined functions
 function dXdt = rate_func01(t,X)
     dXdt = -5*X + 5*cos(t) - sin(t);
@@ -96,4 +129,62 @@ end
 
 function X = solution02(t)
     X = [cos(t);sin(t)];
+end
+
+%% Fixed Step Integration
+function [X_list, solution_X_list, t_list] = calculate_fixed_step_integration(step_func, test_func, solution_func, t_span, h)
+    X0 = solution_func(0);
+    [t_list, X_list, h_avg, num_evals] = step_func(test_func, t_span, X0, h);
+    solution_X_list = zeros(length(X0), length(t_list));
+    for i = 1:length(t_list)
+        solution_X_list(:, i) = solution_func(t_list(i));
+    end
+end
+
+%% Local Truncation Error Function (for rate_func01)
+function truncation_error = local_truncation_error(func, num_points, t_ref, h_list)
+    X0 = solution01(t_ref);
+    x_list = zeros(1, length(h_list));
+    x_actual_list = zeros(1, length(h_list));
+    for i = 1:num_points
+        [X1, num_evals] = func(@rate_func01, t_ref, X0, h_list(i));
+        x_list(i) = X1;
+        x_actual_list(i) = solution01(t_ref + h_list(i));
+    end
+    truncation_error = abs(x_actual_list - x_list);
+end
+
+%% Global Truncation Error Function (for rate_func01)
+function [truncation_error, h_avg_list] = global_truncation_error(func, func2, num_points, t_span, h_list)
+    X0 = solution01(t_span(1));
+    x_actual = solution01(t_span(length(t_span)));
+    x_list = zeros(1, length(h_list));
+    h_avg_list = zeros(1, length(h_list));
+    if isa(func2, 'function_handle')
+        for i = 1:num_points
+            [t_list, X_list, h_avg, num_evals] = func(@rate_func01, func2, t_span, X0, h_list(i));
+            x_list(i) = X_list(:, end);
+            h_avg_list(i) = h_avg;
+        end
+    else
+        for i = 1:num_points
+            [t_list, X_list, h_avg, num_evals] = func(@rate_func01, t_span, X0, h_list(i));
+            x_list(i) = X_list(:, end);
+            h_avg_list(i) = h_avg;
+        end
+    end
+    truncation_error = abs(x_actual - x_list);
+end
+
+%% Local Truncation Error Function (for rate_func02)
+function truncation_error = local_truncation_error2(func, num_points, t_ref, h_list)
+    X0 = solution02(t_ref);
+    x_list = zeros(1, length(h_list));
+    x_actual_list = zeros(1, length(h_list));
+    for i = 1:num_points
+        [X1, num_evals] = func(@rate_func01, t_ref, X0, h_list(i));
+        x_list(i) = X1;
+        x_actual_list(i) = solution02(t_ref + h_list(i));
+    end
+    truncation_error = abs(x_actual_list - x_list);
 end
