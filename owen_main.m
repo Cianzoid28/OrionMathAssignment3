@@ -144,7 +144,7 @@ for i = 1:length(t_list)
     solution_X_list(i) = solution01(t_list(i));
 end
 plot(t_list, solution_X_list, colors(5))
-title('Implicit Midpoint H Step Comparison');
+title('.38 H Step Comparison');
 legend("Forward Euler's Method H = 0.38","Backwards Euler's Method H = 0.38","Implicit Midpoint H = 0.38","Explicit Midpoint H = 0.38",'Closed-Form Solution')
 grid on;
 
@@ -178,7 +178,7 @@ for i = 1:length(t_list)
     solution_X_list(i) = solution01(t_list(i));
 end
 plot(t_list, solution_X_list, colors(5))
-title('Implicit Midpoint H Step Comparison');
+title('.45 H Step Comparison');
 legend("Forward Euler's Method H = 0.45","Backwards Euler's Method H = 0.45","Implicit Midpoint H = 0.45","Explicit Midpoint H = 0.45",'Closed-Form Solution')
 grid on;
 
