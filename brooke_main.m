@@ -69,14 +69,54 @@ num_points = 100;
 t_ref = 0.492;
 h_list = logspace(-5, 1, num_points);
 
-euler_truncation_error = local_truncation_error(@forward_euler_step, num_points, t_ref, h_list);
+[euler_truncation_error, x_actual_list] = local_truncation_error(@forward_euler_step, num_points, t_ref, h_list);
 midpoint_truncation_error = local_truncation_error(@explicit_midpoint_step, num_points, t_ref, h_list);
+
+% Calculate analytical difference
+analytical_difference = zeros(1, length(h_list));
+for i = 1:length(h_list)
+    analytical_difference(i) = abs(solution01(t_ref + h_list(i)) - solution01(t_ref));
+end
+
+% Create Fit Lines
+p_analytical = polyfit(log(h_list), log(analytical_difference), 1);
+y_hat_analytical = exp(p_analytical(1) * log(h_list) + p_analytical(2));
+label1 = ['log(y) = ' num2str(p_analytical(1)) 'log(x) + ' num2str(p_analytical(2))];
+
+p_euler = polyfit(log(h_list), log(euler_truncation_error), 1);
+y_hat_euler = exp(p_euler(1) * log(h_list) + p_euler(2));
+label2 = ['log(y) = ' num2str(p_euler(1)) 'log(x) + ' num2str(p_euler(2))];
+
+p_midpoint = polyfit(log(h_list), log(midpoint_truncation_error), 1);
+y_hat_midpoint = exp(p_midpoint(1) * log(h_list) + p_midpoint(2));
+label3 = ['log(y) = ' num2str(p_midpoint(1)) 'log(x) + ' num2str(p_midpoint(2))];
+
+% Plot
+figure();
+loglog(h_list, y_hat_analytical, '-r')
+hold on;
+loglog(h_list, y_hat_euler, '-g')
+loglog(h_list, y_hat_midpoint, '-b')
+
+loglog(h_list, analytical_difference, '+r');
+loglog(h_list, euler_truncation_error, '+g');
+loglog(h_list, midpoint_truncation_error, '+b');
+xlabel('Step Size (h)'); ylabel('Local Truncation Error'); title('Local Truncation Error for Explicit Methods'); 
+legend('Analytical Difference', 'Euler Error', 'Midpoint Error');
+grid on;
+
+%%% Local Truncation Error 2
+
+backward_euler_truncation_error = local_truncation_error(@backward_euler_step, num_points, t_ref, h_list);
+implicit_midpoint_truncation_error = local_truncation_error(@implicit_midpoint_step, num_points, t_ref, h_list);
 
 figure();
 loglog(h_list, euler_truncation_error)
 hold on;
 loglog(h_list, midpoint_truncation_error)
-xlabel('Step Size (h)'); ylabel('Local Truncation Error'); title('Local Truncation Error vs Step Size'); legend('Euler Error', 'Midpoint Error');
+loglog(h_list, backward_euler_truncation_error);
+loglog(h_list, implicit_midpoint_truncation_error);
+xlabel('Step Size (h)'); ylabel('Local Truncation Error'); title('Local Truncation Error for All Methods'); legend('Euler Error', 'Midpoint Error', 'Backward Euler Error', 'Implicit Midpoint Error');
 grid on;
 
 %% Global Truncation Error
@@ -152,22 +192,6 @@ plot(t_list, solution_X_list);
 xlabel('Time'); ylabel('Solution'); title('Test02 Implicit Midpoint Integration Results');
 grid on;
 
-%% Local Truncation Error
-num_points = 100;
-t_ref = 0.492;
-h_list = logspace(-5, 1, num_points);
-
-% Calculate local truncation error
-backward_euler_truncation_error = local_truncation_error(@backward_euler_step, num_points, t_ref, h_list);
-implicit_midpoint_truncation_error = local_truncation_error(@implicit_midpoint_step, num_points, t_ref, h_list);
-
-figure();
-loglog(h_list, backward_euler_truncation_error);
-hold on;
-loglog(h_list, implicit_midpoint_truncation_error);
-xlabel('Step Size (h)'); ylabel('Local Truncation Error'); title('Local Truncation Error vs Step Size'); legend('Backward Euler Error', 'Implicit Midpoint Error');
-grid on;
-
 %% Global Truncation Error
 t_span = [0, t_ref];
 
@@ -214,10 +238,11 @@ function [X_list, solution_X_list, t_list] = calculate_fixed_step_integration(st
 end
 
 %% Local Truncation Error Function (for rate_func01)
-function truncation_error = local_truncation_error(func, num_points, t_ref, h_list)
+function [truncation_error, x_actual_list] = local_truncation_error(func, num_points, t_ref, h_list)
     X0 = solution01(t_ref);
     x_list = zeros(1, length(h_list));
     x_actual_list = zeros(1, length(h_list));
+    
     for i = 1:num_points
         [X1, num_evals] = func(@rate_func01, t_ref, X0, h_list(i));
         x_list(i) = X1;
