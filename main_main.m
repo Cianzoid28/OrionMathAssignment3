@@ -46,7 +46,7 @@ legend("Forward Euler's Method H = 0.45","Backwards Euler's Method H = 0.45","Im
 %% Local Truncation Error Table
 num_points = 100;
 t_ref = 0.492;
-h_list = logspace(-5, 1, num_points);
+h_list = logspace(-5, -1, num_points);
 
 params = struct();
 params.num_points = num_points;
@@ -81,15 +81,74 @@ analytical_difference = zeros(2, length(h_list));
 for i = 1:length(h_list)
     analytical_difference(:, i) = abs(solution02(t_ref + h_list(i)) - solution02(t_ref));
 end
-slope = polyfit([log(h_list); log(h_list)], log(analytical_difference), 1);
+analytical_difference = analytical_difference(1, :) + analytical_difference(2, :);
+slope = polyfit(log(h_list), log(analytical_difference), 1);
 test_2_local_slopes(1) = slope(1);
 
 % Calculate local errors
 for i = 1:length(step_funcs)
     error = local_truncation_error(step_funcs{i}, @rate_func02, @solution02, params);
-    slope = polyfit([log(h_list), log(h_list)], log(error), 1);
+    error = error(1, :) + error(2, :);
+    slope = polyfit(log(h_list), log(error), 1);
     test_2_local_slopes(i+1) = slope(1);
 end
+
+%% Local Truncation Error Plot
+num_points = 100;
+t_ref = 0.492;
+h_list = logspace(-5, 1, num_points);
+
+params = struct();
+params.num_points = num_points;
+params.t_ref = t_ref;
+params.h_list = h_list;
+
+%%% Local Truncation Error Plot 1
+euler_truncation_error = local_truncation_error(@forward_euler_step, @rate_func01, @solution01, params);
+midpoint_truncation_error = local_truncation_error(@explicit_midpoint_step, @rate_func01, @solution01, params);
+
+% Calculate analytical difference
+analytical_difference = zeros(1, length(h_list));
+for i = 1:length(h_list)
+    analytical_difference(i) = abs(solution01(t_ref + h_list(i)) - solution01(t_ref));
+end
+
+% Create Fit Lines
+p_analytical = polyfit(log(h_list), log(analytical_difference), 1);
+y_hat_analytical = exp(p_analytical(1) * log(h_list) + p_analytical(2));
+
+p_euler = polyfit(log(h_list), log(euler_truncation_error), 1);
+y_hat_euler = exp(p_euler(1) * log(h_list) + p_euler(2));
+
+p_midpoint = polyfit(log(h_list), log(midpoint_truncation_error), 1);
+y_hat_midpoint = exp(p_midpoint(1) * log(h_list) + p_midpoint(2));
+
+% Plot
+figure();
+loglog(h_list, y_hat_analytical, '-r')
+hold on;
+loglog(h_list, y_hat_euler, '-g')
+loglog(h_list, y_hat_midpoint, '-b')
+
+loglog(h_list, analytical_difference, '+r');
+loglog(h_list, euler_truncation_error, '+g');
+loglog(h_list, midpoint_truncation_error, '+b');
+xlabel('Step Size (h)'); ylabel('Local Truncation Error'); title('Local Truncation Error for Explicit Methods'); 
+legend('Analytical Difference', 'Euler Error', 'Midpoint Error');
+grid on;
+
+%%% Local Truncation Error Plot 2
+backward_euler_truncation_error = local_truncation_error(@backward_euler_step, @rate_func01, @solution01, params);
+implicit_midpoint_truncation_error = local_truncation_error(@implicit_midpoint_step, @rate_func01, @solution01, params);
+
+figure();
+loglog(h_list, euler_truncation_error)
+hold on;
+loglog(h_list, midpoint_truncation_error)
+loglog(h_list, backward_euler_truncation_error);
+loglog(h_list, implicit_midpoint_truncation_error);
+xlabel('Step Size (h)'); ylabel('Local Truncation Error'); title('Local Truncation Error for All Methods'); legend('Forward Euler Error', 'Explicit Midpoint Error', 'Backward Euler Error', 'Implicit Midpoint Error');
+grid on;
 
 %% Defined functions
 function dXdt = rate_func01(t,X)
