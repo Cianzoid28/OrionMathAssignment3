@@ -21,6 +21,5 @@ function [XB,num_evals] = backward_euler_step(rate_func_in,t,XA,h)
     solver_params.approx = 1;
 
     G = @(Xb) XA + h*rate_func_in(t + h, Xb)- Xb;
-    XB = multivarate_newton(G, XA, solver_params);
-    num_evals = 1;
+    [XB, num_evals] = multivarate_newton(G, XA, solver_params);
 end

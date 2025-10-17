@@ -81,7 +81,6 @@ analytical_difference = zeros(2, length(h_list));
 for i = 1:length(h_list)
     analytical_difference(:, i) = abs(solution02(t_ref + h_list(i)) - solution02(t_ref));
 end
-analytical_difference = analytical_difference(1, :) + analytical_difference(2, :);
 slope = polyfit(log(h_list), log(analytical_difference), 1);
 test_2_local_slopes(1) = slope(1);
 
@@ -164,21 +163,101 @@ step_funcs = {@forward_euler_step, @backward_euler_step, ...
 
 num_methods = length(step_funcs);
 
+test_1_errors = zeros(num_points, num_methods);
+test_2_errors = zeros(num_points, 2, num_methods);
+test_1_num_evals = zeros(num_points, num_methods);
+test_2_num_evals = zeros(num_points, 2, num_methods);
+
 test_1_global_slopes = zeros(1, num_methods);
 test_2_global_slopes = zeros(1, num_methods);
 
 %% Test Function 1 
 for i = 1:num_methods
-    [error, ~] = global_truncation_error(step_funcs{i}, @rate_func01, t_span, @solution01, params);
-    slope = polyfit(log(h_list), log(error), 1);
+    [error, h_avg_list_1, num_evals] = global_truncation_error(step_funcs{i}, @rate_func01, t_span, @solution01, params);
+    slope = polyfit(log(h_avg_list_1), log(error), 1);
     test_1_global_slopes(i) = slope(1);
+    test_1_errors(:, i) = error;
+    test_1_num_evals(:, i) = num_evals;
 end
 %% Test Function 2 
 for i = 1:num_methods
-    [error, ~] = global_truncation_error(step_funcs{i}, @rate_func02, t_span, @solution02, params);
-    slope = polyfit(log(h_list), log(error), 1);
+    [error, h_avg_list_2] = global_truncation_error(step_funcs{i}, @rate_func02, t_span, @solution02, params);
+    slope = polyfit(log(h_avg_list_2), log(error), 1);
     test_2_global_slopes(i) = slope(1);
+    test_2_errors(:, i) = error;
+    test_2_num_evals(:, i) = num_evals;
 end
+
+%% Global Truncation Error Table 2
+test_1_global_slopes_num_evals = zeros(1, num_methods);
+test_2_global_slopes_num_evals = zeros(1, num_methods);
+for i = 1:num_methods
+    slope = polyfit(log(test_1_num_evals(:, i)), log(test_1_errors(:,i)), 1);
+    test_1_global_slopes_num_evals(i) = slope(1);
+    slope = polyfit(log(test_2_num_evals(:, i)), log(test_2_errors(:,i)), 1);
+    test_2_global_slopes_num_evals(i) = slope(1);
+end
+
+%% Global Truncation Error Plots
+
+%%% Plot 1 against h_avg_list
+p_euler = polyfit(log(h_avg_list_1), log(test_1_errors(:, 1)), 1);
+y_hat_euler = exp(p_euler(1) * log(h_avg_list_1) + p_euler(2));
+
+p_midpoint = polyfit(log(h_avg_list_1), log(test_1_errors(:, 3)), 1);
+y_hat_midpoint = exp(p_midpoint(1) * log(h_avg_list_1) + p_midpoint(2));
+
+figure();
+loglog(h_avg_list_1, y_hat_euler, '-g')
+hold on;
+loglog(h_avg_list_1, y_hat_midpoint, '-b')
+
+loglog(h_avg_list_1, test_1_errors(:, 1), '+g');
+loglog(h_avg_list_1, test_1_errors(:, 3), '+b');
+xlabel('Step Size (h)'); ylabel('Global Truncation Error'); title('Global Truncation Error for Explicit Methods'); 
+legend('Euler Error', 'Midpoint Error');
+grid on;
+
+%%% Plot 2 against h_avg_list
+figure();
+loglog(h_avg_list_1, test_1_errors(:, 1))
+hold on;
+loglog(h_avg_list_1, test_1_errors(:, 3))
+loglog(h_avg_list_1, test_1_errors(:, 2));
+loglog(h_avg_list_1, test_1_errors(:, 4));
+xlabel('Number of Function Calls'); ylabel('Global Truncation Error'); title('Global Truncation Error for All Methods'); legend('Forward Euler Error', 'Explicit Midpoint Error', 'Backward Euler Error', 'Implicit Midpoint Error');
+grid on;
+
+
+%%% Plot 3 against num_evals
+p_euler = polyfit(log(test_1_num_evals(:, 1)), log(test_1_errors(:, 1)), 1);
+y_hat_euler = exp(p_euler(1) * log(test_1_num_evals(:, 1)) + p_euler(2));
+
+p_midpoint = polyfit(log(test_1_num_evals(:, 3)), log(test_1_errors(:, 3)), 1);
+y_hat_midpoint = exp(p_midpoint(1) * log(test_1_num_evals(:, 3)) + p_midpoint(2));
+
+figure();
+loglog(test_1_num_evals(:, 1), y_hat_euler, '-g')
+hold on;
+loglog(test_1_num_evals(:, 3), y_hat_midpoint, '-b')
+
+loglog(test_1_num_evals(:, 1), test_1_errors(:, 1), '+g');
+loglog(test_1_num_evals(:, 3), test_1_errors(:, 3), '+b');
+xlabel('Number of Function Calls'); ylabel('Global Truncation Error'); title('Global Truncation Error for Explicit Methods'); 
+legend('Euler Error', 'Midpoint Error');
+grid on;
+
+%%% plot 4 against num_evals
+figure();
+loglog(test_1_num_evals(:, 1), test_1_errors(:, 1))
+hold on;
+loglog(test_1_num_evals(:, 3), test_1_errors(:, 3))
+loglog(test_1_num_evals(:, 2), test_1_errors(:, 2));
+loglog(test_1_num_evals(:, 4), test_1_errors(:, 4));
+xlabel('Number of Function Calls'); ylabel('Global Truncation Error'); title('Global Truncation Error for All Methods'); legend('Forward Euler Error', 'Explicit Midpoint Error', 'Backward Euler Error', 'Implicit Midpoint Error');
+grid on;
+
+
 %% Defined functions
 function dXdt = rate_func01(t,X)
     dXdt = -5*X + 5*cos(t) - sin(t);
@@ -271,11 +350,11 @@ function truncation_error = local_truncation_error(func, test_func, solution_fun
         x_list(:, i) = func(test_func, t_ref, X0, h_list(i));
         x_actual_list(:, i) = solution_func(t_ref + h_list(i));
     end
-    truncation_error = abs(x_actual_list - x_list);
+    truncation_error = vecnorm(x_actual_list - x_list);
 end
 
 %% Global Truncation Error Function (for rate_func01)
-function [truncation_error, h_avg_list] = global_truncation_error(step_func, test_func, t_span, solution_func, params)
+function [truncation_error, h_avg_list, num_evals_list] = global_truncation_error(step_func, test_func, t_span, solution_func, params)
 
     num_points = 100;
     if isfield(params, 'num_points')
@@ -292,13 +371,15 @@ function [truncation_error, h_avg_list] = global_truncation_error(step_func, tes
 
     x_approx_list = zeros(dim, length(h_list));
     x_actual_list = zeros(dim, length(h_list));
+    num_evals_list = zeros(dim, length(h_list));
     h_avg_list = zeros(1, length(h_list));
 
     for i = 1:length(h_list)
-        [t_list, X_list, h_avg, ~] = fixed_step_integration(test_func, step_func, t_span, X0, h_list(i));
+        [t_list, X_list, h_avg, num_evals] = fixed_step_integration(test_func, step_func, t_span, X0, h_list(i));
         x_approx_list(:, i) = X_list(:, end);
         x_actual_list(:, i) = solution_func(t_span(2));
         h_avg_list(i) = h_avg;
+        num_evals_list(:, i) = num_evals;
     end
 
     truncation_error = vecnorm(x_actual_list - x_approx_list, 2, 1);
