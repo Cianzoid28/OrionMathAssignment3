@@ -81,6 +81,7 @@ analytical_difference = zeros(2, length(h_list));
 for i = 1:length(h_list)
     analytical_difference(:, i) = abs(solution02(t_ref + h_list(i)) - solution02(t_ref));
 end
+analytical_difference = analytical_difference(1, :) + analytical_difference(2, :);
 slope = polyfit(log(h_list), log(analytical_difference), 1);
 test_2_local_slopes(1) = slope(1);
 
@@ -350,7 +351,7 @@ function truncation_error = local_truncation_error(func, test_func, solution_fun
         x_list(:, i) = func(test_func, t_ref, X0, h_list(i));
         x_actual_list(:, i) = solution_func(t_ref + h_list(i));
     end
-    truncation_error = vecnorm(x_actual_list - x_list);
+    truncation_error = abs(x_actual_list - x_list);
 end
 
 %% Global Truncation Error Function (for rate_func01)
