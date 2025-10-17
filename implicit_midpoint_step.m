@@ -21,6 +21,5 @@ function [XB,num_evals] = implicit_midpoint_step(rate_func_in,t,XA,h)
     solver_params.approx = 1;
 
     G = @(Xb) XA + h*rate_func_in(t + h/2, 1/2*(XA + Xb)) - Xb;
-    XB = multivarate_newton(G, XA, solver_params);
-    num_evals = 2;
+    [XB, num_evals] = multivarate_newton(G, XA, solver_params);
 end

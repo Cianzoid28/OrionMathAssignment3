@@ -1,4 +1,4 @@
-function X_root  = multivarate_newton(fun,x,solver_params)
+function [X_root, num_evals]  = multivarate_newton(fun,x,solver_params)
 
     dxmin = solver_params.dxmin; % min step size from specified params from solver_params
     ftol = solver_params.ftol; %tolerence on function value from specified params from solver_params
@@ -29,6 +29,7 @@ function X_root  = multivarate_newton(fun,x,solver_params)
         delta_x = -J\fval; % finds step using jacobian
         x = x + delta_x; % updates root
     end
+    num_evals = count + 1;
 
     X_root = x; %calls root X_root
 
