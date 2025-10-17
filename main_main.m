@@ -150,6 +150,35 @@ loglog(h_list, implicit_midpoint_truncation_error);
 xlabel('Step Size (h)'); ylabel('Local Truncation Error'); title('Local Truncation Error for All Methods'); legend('Forward Euler Error', 'Explicit Midpoint Error', 'Backward Euler Error', 'Implicit Midpoint Error');
 grid on;
 
+%% Global Truncation Error Table
+num_points = 100;
+h_list = logspace(-4, -1, num_points);
+t_span = [0, 10];
+
+params = struct();
+params.num_points = num_points;
+params.h_list = h_list;
+
+step_funcs = {@forward_euler_step, @backward_euler_step, ...
+              @explicit_midpoint_step, @implicit_midpoint_step};
+
+num_methods = length(step_funcs);
+
+test_1_global_slopes = zeros(1, num_methods);
+test_2_global_slopes = zeros(1, num_methods);
+
+%% Test Function 1 
+for i = 1:num_methods
+    [error, ~] = global_truncation_error(step_funcs{i}, @rate_func01, t_span, @solution01, params);
+    slope = polyfit(log(h_list), log(error), 1);
+    test_1_global_slopes(i) = slope(1);
+end
+%% Test Function 2 
+for i = 1:num_methods
+    [error, ~] = global_truncation_error(step_funcs{i}, @rate_func02, t_span, @solution02, params);
+    slope = polyfit(log(h_list), log(error), 1);
+    test_2_global_slopes(i) = slope(1);
+end
 %% Defined functions
 function dXdt = rate_func01(t,X)
     dXdt = -5*X + 5*cos(t) - sin(t);
@@ -243,4 +272,34 @@ function truncation_error = local_truncation_error(func, test_func, solution_fun
         x_actual_list(:, i) = solution_func(t_ref + h_list(i));
     end
     truncation_error = abs(x_actual_list - x_list);
+end
+
+%% Global Truncation Error Function (for rate_func01)
+function [truncation_error, h_avg_list] = global_truncation_error(step_func, test_func, t_span, solution_func, params)
+
+    num_points = 100;
+    if isfield(params, 'num_points')
+        num_points = params.num_points;
+    end
+
+    h_list = logspace(-5, 1, num_points);
+    if isfield(params, 'h_list')
+        h_list = params.h_list;
+    end
+
+    X0 = solution_func(t_span(1));
+    dim = length(X0); 
+
+    x_approx_list = zeros(dim, length(h_list));
+    x_actual_list = zeros(dim, length(h_list));
+    h_avg_list = zeros(1, length(h_list));
+
+    for i = 1:length(h_list)
+        [t_list, X_list, h_avg, ~] = fixed_step_integration(test_func, step_func, t_span, X0, h_list(i));
+        x_approx_list(:, i) = X_list(:, end);
+        x_actual_list(:, i) = solution_func(t_span(2));
+        h_avg_list(i) = h_avg;
+    end
+
+    truncation_error = vecnorm(x_actual_list - x_approx_list, 2, 1);
 end

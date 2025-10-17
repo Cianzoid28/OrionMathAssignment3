@@ -228,11 +228,6 @@ function [truncation_error, h_avg_list] = global_truncation_error(step_func, tes
 
     truncation_error = vecnorm(x_actual_list - x_approx_list, 2, 1);
 end
-
-
-
-
-
 %% Local Truncation Error Function (for rate_func02)
 function truncation_error = local_truncation_error2(func, num_points, t_ref, h_list)
     X0 = solution02(t_ref);
