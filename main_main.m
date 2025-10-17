@@ -226,7 +226,7 @@ hold on;
 loglog(h_avg_list_1, test_1_errors(:, 3))
 loglog(h_avg_list_1, test_1_errors(:, 2));
 loglog(h_avg_list_1, test_1_errors(:, 4));
-xlabel('Number of Function Calls'); ylabel('Global Truncation Error'); title('Global Truncation Error for All Methods'); legend('Forward Euler Error', 'Explicit Midpoint Error', 'Backward Euler Error', 'Implicit Midpoint Error');
+xlabel('Step Size (h)'); ylabel('Global Truncation Error'); title('Global Truncation Error for All Methods'); legend('Forward Euler Error', 'Explicit Midpoint Error', 'Backward Euler Error', 'Implicit Midpoint Error');
 grid on;
 
 
